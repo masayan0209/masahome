@@ -1,0 +1,388 @@
+最大行、最大列
+With ActiveSheet.UsedRange 
+  MaxRow = .Find("*", , xlFormulas, , xlByRows, xlPrevious).Row 
+  MaxCol = .Find("*", , xlFormulas, , xlByColumns, xlPrevious).Column 
+End With
+
+文字列検索１
+ColIndex = ActiveSheet.UsedRange.Find("検索文字列", , xlValues, , xlByColumns, xlNext).Column
+
+文字列検索2
+Dim colRange As Range
+  With ActiveSheet.UsedRange
+  '列番号を取得
+    Set colRange = .Find(CADColumn, , xlValues, , xlByColumns, xlNext)
+    If (Not colRange Is Nothing) Then
+      ColIndex = .Find(CADColumn, , xlValues, , xlByColumns, xlNext).Column
+    Else
+      MsgBox CADColumn & "列が見つかりませんでした."
+      End
+    End If
+  '最大行を取得
+    MaxRow = .Find("*", , xlValues, , xlByRows, xlPrevious).Row
+  End With
+
+メニューバーをリセット
+Application.CommandBars("Worksheet Menu Bar").Reset
+
+アドインインストール
+Dim oAddin As Object 
+Set oAddin = AddIns.Add("ファイルパス", True) 
+oAddin.Installed = True 
+Set oAddin = Nothing
+
+重複処理
+Dim myData As Variant 
+Dim ExtCheck As Boolean 
+With Worksheets("Sheet1") 
+  myData = .Range(.Cells(1, 1), .Cells(Rows.Count, 1).End(xlUp)).Value 
+End With 
+
+For Each c In myData 
+  ExtCheck = True 
+  For i = 0 To ComboBox1.ListCount - 1 
+    If ComboBox1.List(i) = CStr(c) Then 
+      ExtCheck = False 
+      Exit For 
+    End If 
+  Next 
+  If ExtCheck Then 
+    ComboBox1.AddItem c 
+  End If 
+Next
+
+シートをアクティブにする
+ActiveWorkbook.Worksheets(SheetName).Activate
+
+ブックをアクティブにする
+Workbooks(BookName).Activate
+
+シートチェック
+SheetCheck = False 
+For Each ws In Worksheets 
+If ws.Name = "シート名" Then 
+SheetCheck = True 
+Exit For 
+End If 
+Next ws 
+
+If SheetCheck = False Then 
+MsgBox "シートが見つかりませんでした." 
+Exit Sub 
+End If
+
+セル名存在チェック
+'セル名にCellNameがあるかチェック 
+CellNameCheck = False 
+CellName = "年月日" 
+For Each nm In ActiveWorkbook.Names 
+  If nm.Name = CellName Then 
+    CellNameCheck = True 
+  End If 
+Next 
+If CellNameCheck = False Then 
+  MsgBox CellName & "が見つかりませんでした." 
+  Exit Sub 
+End If
+
+シートコピー
+ActiveSheet.Copy After:=Sheets(Sheets.Count)
+
+画面更新
+Application.ScreenUpdating = False
+Application.ScreenUpdating = True
+
+エラー非表示
+Application.DisplayAlerts = False
+Application.DisplayAlerts = True
+
+日時を取得
+Dim DtYear As String
+Dim DtMonth As String
+Dim DtDay As String
+Dim DtHour As String
+Dim DtMinute As String
+Dim DtSecond As String
+
+DtYear = Year(Date)
+DtMonth = "0" & Month(Date)
+DtDay = "0" & Day(Date)
+DtHour = "0" & Hour(Time)
+DtMinute = "0" & Minute(Time)
+DtSecond = "0" & Second(Time)
+
+DtMonth = Right(DtMonth, 2)
+DtDay = Right(DtDay, 2)
+DtHour = Right(DtHour, 2)
+DtMunute = Right(DtMinute, 2)
+DtSecond = Right(DtSecond, 2)
+
+DtTime = DtYear & DtMonth & DtDay & DtHour & DtMunute & DtSecond
+
+
+シート存在チェック
+  Dim SheetName As String
+  Dim SheetCheck As Boolean
+  SheetName = "シート名"
+  SheetCheck = False
+  For Each ws In Worksheets
+    If ws.Name = SheetName Then
+      SheetCheck = True
+      Exit For
+    End If
+  Next ws  If SheetCheck = False Then
+    MsgBox SheetName & "シートが見つかりませんでした."
+    Exit Sub
+  End If
+
+  フォームのサイズを変更できるようにする
+  Option Explicit'(1)APIの関数をマウントする宣言文
+Private Declare Function GetWindowLong Lib "user32" Alias "GetWindowLongA" _
+    (ByVal hWnd As Long, ByVal nIndex As Long) As Long
+Private Declare Function SetWindowLong Lib "user32" Alias "SetWindowLongA" _
+    (ByVal hWnd As Long, ByVal nIndex As Long, ByVal dwNewLong As Long) As Long
+Private Declare Function GetActiveWindow Lib "user32" () As Long
+Private Declare Function DrawMenuBar Lib "user32" (ByVal hWnd As Long) As Long'(2)関数の引数に使用する定数の宣言文
+Private Const GWL_STYLE = (-16)
+Private Const WS_THICKFRAME = &H40000
+Private Const WS_SYSMENU = &H80000
+Private Const WS_MAXIMIZEBOX = &H10000  '<--------(3)
+Private Const WS_MINIMIZEBOX = &H20000
+Sub Variable_WindowSize()
+    Dim myRes As Long
+    Dim myWindowHandle As Long
+    Dim myWindowStyle As Long    myWindowHandle = GetActiveWindow()
+    myWindowStyle = GetWindowLong(myWindowHandle, GWL_STYLE)
+    myWindowStyle = myWindowStyle _
+                    Or WS_THICKFRAME _   '<--------(1)
+                    Or WS_MAXIMIZEBOX _  '<--------(2)
+                    Or WS_MINIMIZEBOX    '<--------(3)
+    myRes = SetWindowLong(myWindowHandle, GWL_STYLE, myWindowStyle)
+    myRes = DrawMenuBar(myWindowHandle)
+End SubPrivate Sub UserForm_Activate()
+    Call Variable_WindowSize
+End Sub
+Private Sub UserForm_Resize()
+    On Error GoTo ErrHandler    '<--------(1)
+        If Me.Width < 342 Then  '<--------(2)
+            Me.Width = 342
+            Exit Sub
+        End If        If Me.Height < 200 Then  '<--------(3)
+            Me.Height = 200
+            Exit Sub
+        End If        Me.CommandButton1.Left = Me.Width + _
+                                    CommandButton1_Left_Position  '<--------(4)
+        Me.CommandButton2.Width = Me.Width - _
+                                     Me.CommandButton2.Left + _
+                                     CommandButton2_Right_Position  '<--------(5)
+        Me.CommandButton3.Left = Me.Width + _
+                                    CommandButton3_Left_Position  '<--------(6)
+        Me.CommandButton3.Top = Me.Height + _
+                                   CommandButton3_Top_Position  '<--------(7)
+        Me.TextBox1.Width = Me.Width - _
+                               Me.TextBox1.Left + _
+                               TextBox1_Right_Position  '<--------(8)
+        Me.ListBox1.Width = Me.Width - _
+                               Me.ListBox1.Left + _
+                               ListBox1_Right_Position  '<--------(9)
+        Me.ListBox1.Height = Me.Height - _
+                                Me.ListBox1.Top + _
+                                ListBox1_Botom_Position  '<--------(10)
+    On Error GoTo 0  '<--------(11)
+Exit Sub  '<--------(12)ErrHandler:  '<--------(13)
+    On Error GoTo 0  '<--------(14)
+End Sub
+Private Sub UserForm_Initialize()
+    CommandButton1_Left_Position = -(Me.Width - Me.CommandButton1.Left)
+    CommandButton2_Right_Position = Me.CommandButton2.Left + _
+                                    Me.CommandButton2.Width - Me.Width
+    CommandButton3_Left_Position = -(Me.Width - Me.CommandButton3.Left)
+    CommandButton3_Top_Position = Me.CommandButton3.Top - Me.Height
+    TextBox1_Right_Position = Me.TextBox1.Left + Me.TextBox1.Width - Me.Width
+    ListBox1_Right_Position = Me.ListBox1.Left + Me.ListBox1.Width - Me.Width
+    ListBox1_Botom_Position = Me.ListBox1.Top + Me.ListBox1.Height - Me.Height
+End Sub
+
+キーアクション(Enter)
+Private Sub cmd_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
+  If KeyCode = vbKeyReturn Then
+    'hoge
+  End If
+ End Sub
+
+ メッセージボックス
+ Dim rc As Integer
+    rc = MsgBox("処理を続行しますか？", vbYesNo + vbQuestion, "確認")
+    If rc = vbYes Then
+        'hoge
+    Else
+        'hoge
+    End If
+
+
+ファイルを開いているかチェック
+Dim BookName As String
+  Dim BookCheck As Boolean
+  BookName = "ファイル名.xlsx"
+  BookCheck = False
+  For Each bk In Workbooks
+    If bk.Name = BookName Then
+      BookCheck = True
+      Exit For
+    End If
+  Next bk
+  If BookCheck = False Then
+    MsgBox BookName & "ファイルが見つかりませんでした."
+    Exit Sub
+  End If
+
+  ファイルコピー
+  FileCopy FromFilePath, ToFilePath
+
+  ファイル削除
+  Kill FilePath
+
+  待機時間
+      WaitCnt = 0  '待機時間
+    newHour = Hour(Now())
+    newMinute = Minute(Now())
+    newSecond = Second(Now()) + WaitCnt
+    waitTime = TimeSerial(newHour, newMinute, newSecond)
+    Application.Wait waitTime
+
+EscapeでFormを閉じる
+Private Sub OKCommandButton_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift As Integer)
+  If KeyCode = 27 Then
+    End
+  End If
+End Sub
+
+タスクバーにあるタイトルバー名の一覧を取得
+Option Explicit
+Private Declare Function EnumWindows Lib "user32" _
+    (ByVal lpEnumFunc As Long, ByVal lParam As Long) As Long
+Private Declare Function SendMessage Lib "user32" Alias "SendMessageA" _
+    (ByVal hWnd As Long, ByVal wMsg As Long, ByVal wParam As Long, lParam As Any) As Long
+Private Const WM_GETTEXTLENGTH          As Long = &HE
+Private Const WM_GETTEXT                As Long = &HD
+Private EnumWindowTextCollection        As CollectionPublic Function EnumWindowText() As Collection
+    
+    Set EnumWindowTextCollection = New Collection
+    Call EnumWindows(AddressOf EnumWindowsProc, 0)
+    Set EnumWindowText = EnumWindowTextCollection
+    
+End Function
+Private Function EnumWindowsProc(ByVal hWnd As Long, ByVal lParam As Long) As Long
+    
+    EnumWindowTextCollection.Add GetWndText(hWnd)
+    EnumWindowsProc = 1
+    
+End FunctionPublic Function GetWndText(ByVal hWnd As Long) As String
+    
+    Dim i                       As Long
+    Dim buf()                   As Byte
+    
+    If hWnd <> 0 Then
+        i = SendMessage(hWnd, WM_GETTEXTLENGTH, 0, 0) + 1
+        ReDim buf(1 To i)
+        i = SendMessage(hWnd, WM_GETTEXT, i, buf(1))
+        If i <= 0 Then
+            Erase buf
+        Else
+            ReDim Preserve buf(1 To i)
+        End If
+        GetWndText = StrConv(buf, vbUnicode)
+    End If
+    
+End FunctionSub getPdfProcess()
+ Dim i As Integer
+ Dim cnt  As Integer
+ cnt = 1
+ For i = 1 To EnumWindowText.count
+  If EnumWindowText(i) = "" Then
+  Else
+    If InStr(EnumWindowText(i), " - Adobe Acrobat Reader DC") > 0 Then
+      Cells(cnt, 1) = EnumWindowText(i)
+      Exit For
+    End If
+  End If
+  
+ Next
+End Sub
+ 
+タイトルを探し、アクティブにする。
+    appActivateExt = shellObj.AppActivate(TitleName)
+    WaitCnt = 0
+    Do Until appActivateExt
+      With UserForm1
+        .Label1.Caption = TitleName & " が起動しているかチェック..."
+        .Repaint
+        Sleep 100
+        appActivateExt = shellObj.AppActivate(TitleName)
+        If appActivateExt = False Then
+          WaitCnt = WaitCnt + 1
+          '10秒待って起動しない場合は、処理終了
+          If WaitCnt = 100 Then
+            .Label1.Caption = TitleName & " の起動に失敗しました."
+            .Repaint
+            Sleep 1000
+            Exit Sub
+          End If
+        End If
+      End With
+    Loop
+
+エクセルファイルをodbで読み込む
+'手配リスト読み込み
+  FilePath = "FilePath"
+'手配マクロ\手配リスト読み込み
+  Dim adoCON      As New ADODB.Connection
+  Dim adoRS       As New ADODB.Recordset
+  Dim strSQL      As String
+  
+  'データベースに接続する
+  Set adoCON = New ADODB.Connection
+ 
+  With adoCON
+    .Provider = "Microsoft.ACE.OLEDB.12.0"
+    .Properties("Extended Properties") = "Excel 12.0"
+    .Open FilePath
+  End With
+     
+'カーソルをクライアント側に設定
+  adoRS.CursorLocation = adUseClient
+     
+'Sheet1をテーブルとしてSQLを設定
+  strSQL = "SELECT ヘッダーの名前 FROM [Sheet1$];"
+  
+  'レコードセットを開く
+  adoRS.Open strSQL, adoCON, adOpenKeyset, adLockOptimistic
+  
+  For i = 0 To adoRS.Fields.Count - 1
+    MsgBox adoRS.Fields(i).Name
+    Do Until adoRS.EOF
+      Dim var As Variant
+      Dim fld As ADODB.Field
+      For Each fld In adoRS.Fields
+        var = fld.Value
+        If IsNull(var) Then
+          Exit For
+        End If
+        MsgBox var
+      Next fld
+      adoRS.MoveNext
+    Loop
+  Next
+  
+  adoRS.Close
+  adoCON.Close
+  
+  Set adoRS = Nothing
+  Set adoCON = Nothing
+
+配列検索
+    ext = False
+    strFilMessage = Filter(strArray, strSearch)
+    If UBound(strFilMessage) = 0 Then
+      ext = True
+    End If
