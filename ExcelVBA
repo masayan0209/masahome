@@ -4,6 +4,7 @@ With ActiveSheet.UsedRange
   MaxCol = .Find("*", , xlFormulas, , xlByColumns, xlPrevious).Column 
 End With
 
+
 文字列検索１
 ColIndex = ActiveSheet.UsedRange.Find("検索文字列", , xlValues, , xlByColumns, xlNext).Column
 
