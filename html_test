@@ -1,0 +1,72 @@
+<div class="cp_fulltab03"> <div class="tabs_menu">
+  <input checked id="rad1" name="rad" type="radio">
+  <label data-text="First" for="rad1"></label>
+  <input id="rad2" name="rad" type="radio">
+  <label data-text="Second" for="rad2"></label>
+  <input id="rad3" name="rad" type="radio">
+  <label data-text="Third" for="rad3"></label>
+  <input id="rad4" name="rad" type="radio">
+  <label data-text="Force" for="rad4"></label>
+
+<section id="sakura">
+    <div class="inner">
+     <div class="sakuraflake01"></div>
+     <div class="sakuraflake02"></div>
+     <div class="sakuraflake03"></div>
+     <div class="sakuraflake04"></div>
+     <div class="sakuraflake05"></div>
+     <div class="sakuraflake06"></div>
+     <div class="sakuraflake07"></div>
+     <div class="sakuraflake08"></div>
+     <div class="sakuraflake09"></div>
+     <div class="sakuraflake10"></div>
+     <div class="sakuraflake11"></div>
+     <div class="sakuraflake12"></div>
+    </div>
+   </section>
+   <section id="snow">
+    <div class="inner">
+     <div class="snowflake01"></div>
+     <div class="snowflake02"></div>
+     <div class="snowflake03"></div>
+     <div class="snowflake04"></div>
+     <div class="snowflake05"></div>
+     <div class="snowflake06"></div>
+     <div class="snowflake07"></div>
+     <div class="snowflake08"></div>
+     <div class="snowflake09"></div>
+     <div class="snowflake10"></div>
+     <div class="snowflake11"></div>
+     <div class="snowflake12"></div>
+    </div>
+   </section>
+
+  <div class="tabs_cont">
+   <div class="card">
+    <h1>First Tab</h1>
+    <p><div class="css-script-ads">First Tab</div></p>
+    <div class="cp_card06">
+
+
+    .tabs_menu > .tabs_cont {
+position: absolute;
+display: inline-block;
+width: 100%;
+height: 100%;
+left: 4rem;
+text-align: center;
+-webkit-transition: -webkit-transform 0.5s;
+transition:         transform 0.5s;background-image:
+radial-gradient(#3F51B5 4%, #3F51B5 7%, transparent 7%),
+radial-gradient(#3F51B5 4%, #3F51B5 7%, transparent 7%),
+linear-gradient(#ffffff 5%,#ffffff 5%,
+transparent 15%, transparent 15%),
+linear-gradient(45deg, transparent 30%, transparent 49%,
+#9FA8DA 49%, #9FA8DA 50%,
+transparent 50%, transparent 100%),
+linear-gradient(-45deg, transparent 30%, transparent 49%,
+#9FA8DA 49%, #9FA8DA 50%,
+transparent 50%, transparent 100%);
+background-position: 50px 50px, 0px 0px, 0px 0px, 0px 0px, 0px 0px;
+background-size: 100px 100px,100px 100px,100% 4px,100px 100px,100px 100px;
+}

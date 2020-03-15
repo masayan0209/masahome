@@ -1,0 +1,29 @@
+batからvbs読み込み
+cscript "path.vbs"
+
+日時を取得
+"set dt=%date:~0,4%-%date:~5,2%-%date:~8,2%
+set time2=%time: =0%
+set tm=%time2:~0,2%-%time2:~3,2%-%time2:~6,2%"
+
+ファイルに結果を出力
+echo -----DiffBackup Start----- >> %logpath%
+
+日付以降ファイル削除
+ForFiles /P E:\BackupLog /D -500 /C "cmd /c del /F /S /Q @file" >> %logpath%
+
+バックアップ
+robocopy /S /MIR "D:\FromDirPath" "E:\CopyToDirPath" /LOG+:%logpath% /FP /NS /NC /NP /NDL
+
+実行ファイルパス
+"echo %0
+echo %~dp0
+echo %~d0
+echo %~p0
+"
+
+セキュリティ出力
+icacls フォルダパス /findsid "UserName" /t /c > logパス
+
+読み取り専用に変更
+cacls フォルダパス /e /p UserName:r

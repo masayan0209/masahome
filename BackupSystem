@@ -1,0 +1,93 @@
+Backup
+set dt=%date:~0,4%-%date:~5,2%-%date:~8,2%
+set time2=%time: =0%
+set tm=%time2:~0,2%-%time2:~3,2%-%time2:~6,2%
+set logname=%dt%_%tm%_Daily.log
+set logdir=E:\BackupLog\
+set logpath=%logdir%%logname%rem echo -----POINT_CLOUD_DATA DailyBackup Start----- >> %logpath%
+rem xcopy /y /s /d "D:\POINT_CLOUD_DATA" "E:\POINT_CLOUD_DATA" >> %logpath%
+rem echo -----POINT_CLOUD_DATA DailyBackup End----- >> %logpath%
+robocopy /S /MIR "D:\POINT_CLOUD_DATA" "E:\POINT_CLOUD_DATA" /LOG+:%logpath% /FP /NS /NC /NP /NDLset dt=%date:~0,4%-%date:~5,2%-%date:~8,2%
+set time2=%time: =0%
+set tm=%time2:~0,2%-%time2:~3,2%-%time2:~6,2%
+set logname=%dt%_%tm%_Diff.log
+set logdir=E:\BackupLog\
+set logpath=%logdir%%logname%echo -----DiffBackup Start----- >> %logpath%
+cscript E:\NAS_Backup_Diff.vbs >> %logpath%
+echo -----DiffBackup End----- >> %logpath%
+
+
+Delete
+set dt=%date:~0,4%-%date:~5,2%-%date:~8,2%
+set time2=%time: =0%
+set tm=%time2:~0,2%-%time2:~3,2%-%time2:~6,2%
+set logname=%dt%_%tm%_LogDelete.log
+set logdir=E:\BackupLog\
+set logpath=%logdir%%logname%echo -----BackupLogDelete Start----- >> %logpath%
+ForFiles /P E:\BackupLog /D -500 /C "cmd /c del /F /S /Q @file && echo @file" >> %logpath%
+echo -----BackupLogDelete End----- >> %logpath%
+
+Diff_vbs
+Set fso = CreateObject("Scripting.FileSystemObject")Call Backup_Diff'Backup_Diffを実行
+Sub Backup_Diff()  YearNow = Year(Now)
+  MonthNow = Right("0" & Month(Now), 2)
+  DayNow = Right("0" & Day(Now), 2)
+  HourNow   = Right("0" & Hour(Now), 2)
+  MinuteNow = Right("0" & Minute(Now), 2)
+  SecondNow = Right("0" & Second(Now), 2)
+  DateTime = YearNow & "-" & MonthNow & "-" & DayNow & "_" & HourNow & "-" & MinuteNow & "-" & SecondNow  Set src = fso.GetFolder("E:\BackupLog")    ' 対象フォルダの指定  Set objwshell = createobject("wscript.shell")
+  SecTiffBool = True  For Each FileName In src.Files
+    FileType = InStr(fso.GetFileName(FileName), "_Daily")'_DailyLogを取得
+    If FileType > 1 Then
+      Set ogf = fso.GetFile(FileName)
+      UpdateDay = ogf.DateLastModified      SecDiff = DateDiff("s",UpdateDay,Now)'一番最初のデータを取得
+      If SecTiffBool Then
+        SecDiffBak = SecDiff
+        SecTiffBool = False
+        FileNameOpen = FileName
+      End If'更新日が新しいものを取得
+      If SecDiffBak > SecDiff Then
+        FileNameOpen = FileName
+        SecDiffBak = SecDiff
+      End If    End If
+  Next
+  Set objFile = fso.OpenTextFile(FileNameOpen, 1)
+  WScript.Echo FileNameOpen & " を読み込み"  Do Until objFile.AtEndOfStream 
+    strLine = objFile.ReadLine
+    strLine = LTrimEx(strLine)
+    FromFile = Replace(strLine,"D:","E:")
+    FromDirPath = fso.GetParentFolderName(FromFile)
+    FromFileName = fso.getFileName(FromFile)
+    ret = fso.FileExists( strLine )
+    If ret = True Then
+      DirPath = fso.GetParentFolderName(strLine)
+      TomkDir = "E:\Diff_Backup\" & DateTime
+      BackupDirPath = Replace(DirPath,"D:",TomkDir)
+      BackupFilePath = Replace(strLine,"D:",TomkDir)
+      CreateFolderEx(BackupDirPath)      CmdLine = "cmd /c robocopy " & """" & FromDirPath & """" & " " & """" & BackupDirPath & """" & " " & """" & FromFileName & """"
+      objwshell.run CmdLine, vbhide'      fso.CopyFile FromFile, BackupFilePath, True
+      WScript.Echo BackupFilePath
+'       WScript.Echo CmdLine
+    End If  Loop  objFile.Close  Set objwshell = nothing
+  Set fso = Nothing
+  Set src = Nothing
+  Set ogf = Nothing
+  Set objFile = NothingEnd Sub' フォルダを再帰的に作成する
+Sub CreateFolderEx(ByVal strPath)
+    Dim strParent   ' 親フォルダ    strParent = fso.GetParentFolderName(strPath)
+    If fso.FolderExists(strParent) = True Then
+        If fso.FolderExists(strPath) <> True Then
+            fso.CreateFolder strPath
+        End If
+    Else
+        CreateFolderEx strParent
+        fso.CreateFolder strPath
+    End If
+End Sub
+Function LTrimEx(str)
+  Dim re
+  Set re = New RegExp
+  re.Pattern = "^\s*"
+  re.Multiline = False
+  LTrimEx = re.Replace(str, "")
+End Function

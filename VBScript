@@ -1,0 +1,256 @@
+フォルダを作成
+Set objFS = CreateObject(""Scripting.FileSystemObject"")
+objFS.CreateFolder(""ファイルパス"")
+
+日時
+YearNow   = Year(Now)
+MonthNow  = Right(""0"" & Month(Now), 2)
+DayNow    = Right(""0"" & Day(Now), 2)
+HourNow   = Right(""0"" & Hour(Now), 2)
+MinuteNow = Right(""0"" & Minute(Now), 2)
+SecondNow = Right(""0"" & Second(Now), 2)DateTime = YearNow & MonthNow & DayNow & HourNow & MinuteNow & SecondNow
+
+ファイルパス取得(SendTo)
+For i = 0 to WScript.Arguments.Count - 1
+  FilePass = FilePass & WScript.Arguments(i) & chr(10)
+Next
+MsgBox FilePass
+
+アクティブにする
+Set WshShell = CreateObject(""Wscript.Shell"")
+WshShell.AppActivate(""AutoCAD 2012"")
+
+Sendkey
+WshShell.SendKeys ""%{F4}""
+WshShell.SendKeys ""{ENTER}""
+
+アプリケーションを起動
+Set objShell = WScript.CreateObject(""WScript.Shell"")
+objShell.run """""""" & ""C:\Program Files\Autodesk\AutoCAD 2012 - Japanese\acad.exe"" & """""""", 1, false
+
+拡張子変更(csv)
+Set objFS = CreateObject(""Scripting.FileSystemObject"")
+Ext = ""csv""
+For i = 0 to WScript.Arguments.Count - 1 
+  FilePass = WScript.Arguments(i)
+  Set objFile = objFS.GetFile(FilePass)
+  GBN = objFS.GetBaseName(FilePass)
+  GEN = objFS.GetExtensionName(FilePass)
+  If GEN <> Ext Then
+    objFile.Name = GBN & ""."" & Ext
+  End If
+Next
+
+レジストリ取得
+Dim Wcls
+Dim Locator
+Dim Service
+Dim Ret
+Dim KeySet
+Dim KeyConst HKEY_CURRENT_MACHINE = &H80000002Set Locator = WScript.CreateObject(""WbemScripting.SWbemLocator"")
+Set Service = Locator.ConnectServer(vbNullString, ""root\default"")
+Set Wcls = Service.Get(""StdRegProv"")Wcls.EnumKey HKEY_CURRENT_MACHINE, ""SOFTWARE\Microsoft\Windows NT\CurrentVersion\Print\Printers"", KeySetFor Each Key In KeySet
+  PrinterArray = PrinterArray & Key & vbCrLf
+NextMsgBox PrinterArraySet Wcls = Nothing
+Set Service = Nothing
+Set Locator = NothingDim objShell
+Dim colEventSource
+Dim PrinterSizeArray
+Dim strSrcSet objShell = WScript.CreateObject(""WScript.Shell"")colEventSource = objShell.RegRead(""HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Print\Printers\FX DocuWide 6055\DsDriver\printMediaSupported"")For Each strSrc In colEventSource
+  PrinterSizeArray = PrinterSizeArray & strSrc & chr(10)
+NextMsgBox PrinterSizeArray
+
+Acadremoconのインストールパス
+Win7:C:\Windows\SysWOW64\AcadRemocon.dll
+WinXP:C:\WINDOWS\system32\AcadRemocon.dll
+
+AutoCADをアクティブにする
+  Call AutoCAD_ToolSub AutoCAD_Tool
+  Set objProcList = GetObject(""winmgmts:"").InstancesOf(""win32_process"")
+  For Each objProcess In objProcList
+      If LCase(objProcess.Name) = ""acad.exe"" Or LCase(objProcess.Name) = ""acadlt.exe"" Then
+          Acad = objProcess.Handle
+          Exit For
+      End If
+  Next  If IsEmpty(Acad) Then
+    msgbox ""AutoCADが起動していません.""
+    Exit Sub
+  End If  Set WshShell = CreateObject(""Wscript.Shell"")
+  WshShell.AppActivate(Acad)    Set WshShell = Nothing
+End Sub
+
+ファイル存在チェック
+Set objFso = CreateObject(""Scripting.FileSystemObject"")If objFso.FileExists(""c:\test.txt"") Then
+    MsgBox ""ファイルが存在します""
+End IfIf objFso.FolderExists(""c:\test"") Then
+    MsgBox ""ファイルが存在します""
+End IfSet objFso = Nothing
+
+ファイルパス結合
+Set FSO = CreateObject(""Scripting.FileSystemObject"")
+OutputPath = FSO.BuildPath(OutputDirPath, filename)
+
+バックアップ
+Dim fso
+Dim str1
+Dim str2
+Dim str3
+Dim SearchDir1
+Dim SearchDir2
+Dim CopyCnt
+Dim CopyFrom
+Dim CopyTo
+SearchDir1 = ""Path1""
+SearchDir2 = ""Path2""
+
+Set fso = CreateObject(""Scripting.FileSystemObject"")
+
+Call MainSub Main()
+  Dim ret
+  
+  WScript.Echo ""---バックアップ処理開始---"" & Chr(10)
+  
+  ret = fso.FolderExists(SearchDir1)
+'コピー元のフォルダが見つからない場合、処理終了
+  If ret = False Then
+    WScript.Echo SearchDir1 & ""が見つかりませんでした。"" & Chr(10) & _
+                 ""処理を終了します。""
+    Exit Sub
+  End If
+  
+  ret = fso.FolderExists(SearchDir2)
+  
+'コピー先のフォルダが見つからない場合、フォルダを作成
+  If ret = False Then
+    WScript.Echo SearchDir2 & ""が見つかりませんでした。"" & Chr(10) & _
+           ""フォルダ作成します。""
+    fso.CreateFolder SearchDir2
+  End If
+  
+'コピー件数初期化
+  CopyCnt = 0
+  CopyFrom = 0
+  CopyTo = 0
+  
+'サブディレクトリを作成し、ファイルをコピー
+  Call FolderSearch(SearchDir1)
+  
+  WScript.Echo Chr(10) & ""---バックアップ処理終了---"" & Chr(10)'処理内容を表示
+'コピー元のリストを表示
+  WScript.Echo ""---コピー元のファイル一覧("" & CopyFrom & "")を表示---""
+  WScript.Echo str1
+'コピー先の一覧を表示
+  WScript.Echo ""---コピー先のファイル一覧("" & CopyTo & "")を表示---""
+  WScript.Echo str2
+'更新したファイル一覧を表示
+  WScript.Echo ""---コピーしたファイル一覧("" & CopyCnt & "")を表示---""
+  WScript.Echo str3
+End Sub
+
+Sub FolderSearch(strTargetDir)
+  Dim ret
+  Dim folder
+  Dim subfolder
+  Dim file
+  Dim strPath
+  Dim File1
+  Dim File2
+  Dim FileDiffSec
+  
+  Dim YearNow
+  Dim MonthNow
+  Dim DayNow
+  Dim HourNow
+  Dim MinuteNow
+  Dim SecondNow
+  Dim DateTime
+  
+  YearNow = Year(Now)
+  MonthNow = Right(""0"" & Month(Now), 2)
+  DayNow = Right(""0"" & Day(Now), 2)
+  HourNow = Right(""0"" & Hour(Now), 2)
+  MinuteNow = Right(""0"" & Minute(Now), 2)
+  SecondNow = Right(""0"" & Second(Now), 2)  
+  DateTime = YearNow & MonthNow & DayNow & HourNow & MinuteNow & SecondNow
+  Set folder = fso.GetFolder(strTargetDir)
+  
+  'フォルダ内のサブフォルダを列挙
+  '（サブフォルダがなければループ内は通らず）
+  For Each subfolder In folder.SubFolders
+    '再帰的呼び出し
+    
+'フォルダ作成
+    strPath = Replace(subfolder.Path, SearchDir1, SearchDir2)
+    ret = fso.FolderExists(strPath)
+    If ret = False Then
+      fso.CreateFolder strPath
+    End If
+    
+    FolderSearch subfolder.Path
+  Next
+  
+  'カレントフォルダ内のファイルを列挙
+  For Each file In folder.Files
+    With file
+'コピー元のファイル一覧を作成
+      str1 = str1 & _
+            ""ファイルパス : "" & _
+            .Path & "" ファイル更新日 : "" & _
+            .DateLastModified & chr(10)
+            
+      CopyFrom = CopyFrom + 1'コピー先のファイル一覧を作成
+      str2 = str2 & Replace(.Path, SearchDir1, SearchDir2) & chr(10)
+      strPath = Replace(.Path, SearchDir1, SearchDir2)
+      
+      CopyTo = CopyTo + 1
+      
+'コピー元のファイルオブジェクト取得
+      Set File1 = fso.GetFile(.Path)
+'コピー先のファイルオブジェクト取得
+      ret = fso.FileExists(strPath)
+      
+      If ret = True Then
+        Set File2 = fso.GetFile(strPath)
+        FileDiffSec = DateDiff(""s"", File2.DateLastModified, File1.DateLastModified)
+        'msgbox .Path & chr(10) & _
+        '       FileDiffSec
+      
+'コピー先にファイルがあり、コピー元よりコピー先のファイルの更新日が古い場合は、
+'コピー先のファイル名を変更(ファイル名の末尾に日時)してからコピーFileDiffSec
+        If FileDiffSec > 0 Then
+          
+'コピー先のファイル名を変更(ファイル名+日時付加)
+          File2.Name = File2.Name & ""_"" & DateTime
+          
+'コピー実行
+          fso.CopyFile .Path, strPath, True
+          str3 = str3 & _
+                  strPath & "" ： "" & File2.DateLastModified & Chr(10)
+          WScript.Echo .Path & "" から "" & strPath & "" にコピー""
+          CopyCnt = CopyCnt + 1
+        End If
+'コピー先にファイルがない場合、そのままコピー
+      Else
+'コピー実行
+        fso.CopyFile .Path, strPath, True
+        Set File2 = fso.GetFile(strPath)
+        str3 = str3 & _
+                  strPath & "" ： "" & File2.DateLastModified & chr(10)
+        WScript.Echo .Path & "" から "" & strPath & "" にコピー""
+        CopyCnt = CopyCnt + 1
+      End If
+      
+    End With
+  Next
+End Sub 
+
+
+
+文字列の頭のタブ、スペースを削除する
+Function LTrimEx(str)
+  Dim re
+  Set re = New RegExp
+  re.Pattern = ""^\s*""
+  re.Multiline = False
+  LTrimEx = re.Replace(str, """")
+End Function"

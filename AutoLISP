@@ -1,0 +1,125 @@
+ブロック名を検索
+(Setq BLOCKFIND(Ssget "_X" '((2 . "DRAWING_TITLE2"))))
+
+DRAWING_TITLE2の一つ目の図形名を取得
+(Setq BF(Ssname BLOCKFIND 0))
+(Setq BF(Entnext BF))
+(While BF
+'属性値を取得
+  (If (= (Cdr(Assoc 2(Entget BF))) ""DRAWING_TITLE"")
+    (Progn
+      (Setq DT2_LIST (Entget BF))
+      (Setq DT2_DT (Cdr (Assoc 1(Entget BF))))
+    )
+  )
+'次の属性を取得
+  (Setq BF (Entnext BF))
+'属性がなくなった場合、WhileEnd
+  (If (/= (Cdr (Assoc 0 (Entget BF))) ""ATTRIB"")
+    (Setq BF nil)
+  )
+)
+
+ファイルパス
+Strcat (Getvar "DwgPrefix") (Getvar "DwgName"))
+
+ファイル名のみ取得 拡張子なし
+(Setq FilePath(Strcat (Getvar ""DwgPrefix"") (Getvar ""DwgName"")))
+(Setq FileBaseName(vl-filename-base FilePath))
+
+リストボックスに追加する
+(Setq VER_CON_LIST (List "0"))
+(start_list "V_N_K")
+(mapcar 'add_list VER_CON_LIST)
+(end_list)
+
+変換
+atof  文字列を実数に変換します。
+atoi  文字列を整数に変換します。
+itoa  整数を文字列に変換して返します。
+fix   実数の小数点以下を切り捨てて整数に変換して返します。
+float 数値を実数に変換して返します。
+rtos  数値を文字列に変換します。
+
+カーソルの位置を取得
+(grread T 4 1)
+
+角度取得
+(defun Degrees->Radians (numberOfDegrees) 
+(* pi (/ numberOfDegrees 180.0)))
+
+yes no のダイアログ
+(SETQ reply (ACET-UI-MESSAGE "Choose dude "
+                              "Russells Dialog"
+                              (+ Acet:YESNOCANCEL Acet:ICONWARNING)
+             )
+ )
+;; Yes = 6
+;; No = 7
+;; Cancel = 2
+(IF (= reply 6)
+  (PROGN (ALERT ""Yep"")
+         ;;
+         ;; More Yes Mojo
+  )
+  ;; else
+  (PROGN (ALERT ""Nope"")
+         ;;
+         ;; More no mojo
+  )
+)
+
+List更新
+(Setq ssList (Subst (Cons 1 str) (Assoc 1 ssList) ssList))
+(Entmod ssList)
+
+文字列検索
+(vl-string-position (ascii "z") "azbdc")
+
+日時取得
+(Setq date (rtos (getvar "cdate") 2 6)
+            yr (substr date 1 4)
+            mo (substr date 5 2)
+            da (substr date 7 2)
+          hour (substr date 10 2)
+           min (substr date 12 2)
+           sec (substr date 14 2)
+    )
+    (Setq tdnow(strcat yr mo da hour min sec))
+
+split関数
+(defun sparser (str delim / ptr lst)
+  (while (setq ptr (vl-string-search delim str))
+    (setq lst (cons (substr str 1 ptr) lst))
+    (setq str (substr str (+ ptr 2)))
+  )
+  (reverse (cons str lst))
+)
+
+dcl呼び出し
+(Setq dcl_id (Load_dialog ""BaloonSort.dcl""))
+(new_dialog ""BaloonSort"" dcl_id ""BaloonSort"")
+(Set_Tile ""PATHCNT"" PathCnt)
+(Action_Tile ""accept"" ""(Defun_GET_TILE)"")
+(Action_Tile ""cancel"" ""(done_dialog)(exit)"")
+(start_dialog)
+(unload_dialog dcl_id)
+
+配列からIndexを取得
+(vl-position "a" (list "a" "b"))
+
+ブロックを削除する
+;削除するブロック名を指定
+(setq delName ""bal_dy22"")
+;ブロックを検索
+(setq ss(Ssget ""_X"" '((0 . ""INSERT""))))
+;初期化
+(setq cnt 0)
+;全てのブロックを削除
+(repeat (sslength ss)
+  (setq BlockName(vla-get-effectivename (vlax-ename->vla-object (ssname ss cnt))))
+  (if (= delName BlockName)
+    (entdel (ssname ss cnt))
+  )
+  (setq cnt (+ cnt 1))
+)

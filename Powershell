@@ -1,0 +1,17 @@
+自身のフルパス
+$scriptPath = $MyInvocation.MyCommand.Path
+
+自身のファイル名
+$scriptName = $myInvocation.MyCommand.name
+
+パスを結合
+$fullPath = Join-Path $DirPath $scriptName
+
+ファイル名　拡張子なし
+$fileName_without_ext = [System.IO.Path]::GetFileNameWithoutExtension($scriptPath)
+
+自身のディレクトリパス
+Split-Path -Parent $scriptPath
+
+メッセージボックスを表示
+[System.Windows.Forms.MessageBox]::Show($MessageStr)
